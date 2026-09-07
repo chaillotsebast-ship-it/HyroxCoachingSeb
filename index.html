@@ -1,6 +1,6 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07111f"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><title>HYROX Smart Coach</title><style>
 *{box-sizing:border-box}body{margin:0;background:#07111f;color:#eef6ff;font-family:system-ui}.app{max-width:760px;margin:auto;padding:18px 14px 60px}.hero{display:flex;gap:12px;align-items:center}.logo{width:54px;border-radius:15px}h1{font-size:24px;margin:0}.muted{color:#9fb0c5;font-size:13px}.card{background:#101f33;border:1px solid #29405b;border-radius:18px;padding:16px;margin:14px 0}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{background:#152941;border-radius:12px;padding:10px;text-align:center}.stat b{display:block;color:#f59e0b;font-size:18px}.tabs,.modes,.actions{display:flex;gap:7px;overflow:auto;flex-wrap:wrap}.btn{border:1px solid #29405b;background:#152941;color:#eef6ff;border-radius:11px;padding:10px 12px;min-height:44px;font-weight:700}.btn.on,.primary{background:#f59e0b;color:#171008}.ex{border-top:1px solid #29405b;padding:12px 0}.ex h3{margin:0 0 5px;font-size:15px}.set{display:grid;grid-template-columns:1fr 80px;gap:8px;align-items:center;margin:7px 0}input,textarea{width:100%;background:#081524;border:1px solid #29405b;color:white;border-radius:9px;padding:10px;font-size:16px}textarea{min-height:65px}.bar{height:8px;background:#081524;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:#f59e0b}.adapt{border-left:4px solid #f59e0b}.ok{color:#86efac}@media(max-width:400px){.stats{grid-template-columns:1fr 1fr}}
-</style></head><body><main class="app"><div class="hero"><img class="logo" src="icon-192.png"><div><h1>HYROX Smart Coach <small style="font-size:12px;color:#9fb0c5">V3</small></h1><div class="muted">Solo RX · objectif 1h25 · adaptatif</div></div></div>
+</style></head><body><main class="app"><div class="hero"><img class="logo" src="icon-192.png"><div><h1>HYROX Smart Coach <small style="font-size:12px;color:#9fb0c5">V4</small></h1><div class="muted">Solo RX · objectif 1h25 · adaptatif</div></div></div>
 <section class="card"><div class="stats"><div class="stat"><b id="wn">1</b>Semaine</div><div class="stat"><b id="pct">0%</b>Réalisé</div><div class="stat"><b>27'50</b>5 km départ</div></div><div class="bar"><i id="bar"></i></div></section>
 <div class="tabs" id="tabs"></div><section class="card" id="day"></section>
 <section class="card adapt"><h2>Bilan & adaptation</h2><p class="muted">Le moteur adapte séparément course, jambes et haut du corps.</p><div class="stats"><label>Global /10<input id="wg" type="number" min="1" max="10" value="5"></label><label>Jambes /10<input id="wl" type="number" min="1" max="10" value="5"></label><label>Bras /10<input id="wa" type="number" min="1" max="10" value="5"></label></div><label>Commentaire<textarea id="note"></textarea></label><div class="actions"><button id="close" class="btn primary">Conclure la semaine → adapter</button></div><div id="result"></div></section>
@@ -41,5 +41,16 @@ const val=id=>Math.max(1,Math.min(10,+document.getElementById(id).value||5));
 document.getElementById('close').onclick=()=>{let g=val('wg'),l=val('wl'),a=val('wa'),m=[];if(a>=8||ds('Lundi').status==='partial'){S.lev.u=Math.max(0,S.lev.u-1);m.push('Haut du corps : maintien/allègement.')}else if(a<=6&&ds('Lundi').status==='done'){S.lev.u=Math.min(4,S.lev.u+1);m.push('Haut du corps : +1 rep par série.')}else m.push('Haut du corps : maintien.');
 if(ds('Mardi').status==='done'&&ds('Mardi').rpe<=7){S.lev.r=Math.min(4,S.lev.r+1);m.push('Course : progression validée.')}else m.push('Course : niveau consolidé, aucun rattrapage.');
 if(l>=8){S.lev.l=Math.max(-2,S.lev.l-1);m.push('Jambes : volume réduit.')}else m.push('Jambes : bloc conservé.');
-if(g>=8)m.push('Semaine difficile : priorité récupération.');S.hist.push({w:S.w,g,l,a,note:document.getElementById('note').value});S.w++;S.d={};save();document.getElementById('result').innerHTML='<div class="ex"><h3 class="ok">Nouvelle semaine créée ✓</h3><p>'+m.join('<br>')+'</p></div>';render()};render();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{})})();
+if(g>=8)m.push('Semaine difficile : priorité récupération.');S.hist.push({w:S.w,g,l,a,note:document.getElementById('note').value});S.w++;S.d={};save();document.getElementById('result').innerHTML='<div class="ex"><h3 class="ok">Nouvelle semaine créée ✓</h3><p>'+m.join('<br>')+'</p></div>';render()};render();if('serviceWorker' in navigator){
+navigator.serviceWorker.register('./sw.js').then(reg=>{
+  reg.update();
+  reg.addEventListener('updatefound',()=>{
+    const nw=reg.installing;
+    if(!nw)return;
+    nw.addEventListener('statechange',()=>{
+      if(nw.state==='activated') location.reload();
+    });
+  });
+}).catch(()=>{});
+}})();
 </script></body></html>
